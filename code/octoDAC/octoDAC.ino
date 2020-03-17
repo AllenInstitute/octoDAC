@@ -175,29 +175,42 @@ if (stringComplete) {
 	
 	char firstChar = char(inputString[0]);
   
-	Serial.println(int(firstChar));
- 
-	if ((firstChar >= minAllowedChannelID) & (firstChar <= maxAllowedChannelID)) {
-		// input is '0' through '8'
+	//Serial.println(int(firstChar));
+
+  switch (firstChar) {
+
+    //case ('0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8') :
+	case ('0') :
+	case ('1') : 
+	case ('2') : 
+	case ('3') : 
+	case ('4') : 
+	case ('5') : 
+	case ('6') : 
+	case ('7') : 
+	case ('8') :
+	// input is '0' through '8'
 
     
 		dacChannel = firstChar - minAllowedChannelID;
-    Serial.println(dacChannel);
+		//Serial.println(dacChannel);
 		serialInputToShort();
 		
 		dacValues[dacChannel] = setVal;
-   Serial.println(setVal);
+		//Serial.println(setVal);
 		
 		DAC8568Write(prefix, control, dacChannel, dacValues[dacChannel], feature);
-				
-	}
-	else if (firstChar == 115) {
+	break;	
+
+	case ('s') :
 		// 's'
 		// Set shutter state
 		if (inputString[2] == 48) {
+			// '0'
             dacShutterState = false;
         }
         else if (inputString[2] == 49) {
+			// '1'
             dacShutterState = true;
         }
         else {
@@ -206,15 +219,14 @@ if (stringComplete) {
         }
 		
 		toggleShutter();
-		
-	}
-	
-	else if (firstChar == 121) {
+	break;
+
+	case ('y') :
 		// Send device ID over serial
 		Serial.println("octoDAC");
-	}
-	
-	else if (firstChar == 63) {
+    break;
+
+	case ('?') :
 		// Query device state
 		// State depends on next character
 
@@ -230,15 +242,16 @@ if (stringComplete) {
               Serial.println('0');
             }
 
-            break;
+		  break;
             
         }
-	}
-		
+    break;
 	
-	else {
+	default :
 		// Command not recognized. Return error character 0x15.
 	      Serial.println(15, HEX);
+	break;
+	
 	}
 	
     
@@ -246,9 +259,9 @@ if (stringComplete) {
     stringComplete = false;
     
   }
-
   
 }
+
 
 
 
@@ -304,7 +317,7 @@ void serialEvent() {
 }
 
 void serialInputToShort() {
-        Serial.println(inputString);
+        //Serial.println(inputString);
         setVal = 0;
         inputOK = false;
         digitCount = 0;
@@ -313,7 +326,7 @@ void serialInputToShort() {
           if ((inputString[i] >= 48) & (inputString[i] < 58)) {
             setVal = setVal*10;
             setVal = setVal + (inputString[i] - 48);
-        Serial.println(setVal);
+			//Serial.println(setVal);
             digitCount++;
           } // if is valid ascii numeral
         } // for loop over valid characters
