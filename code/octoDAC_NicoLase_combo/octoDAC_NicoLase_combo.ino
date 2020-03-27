@@ -45,12 +45,14 @@ octoDAC Commands:
 
             These points should be sorted by second element (time) or waveform will be distorted
             Memory allocated for 128 points total for all channels.
+ * c - Clear all entries in waveform arrays.
  * e - Echo current waveform array
  * f - Free-run waveform.  Execute and repeat until stopped.
  * k - Stop waveform free-run
  * n - Single-shot waveform. Execute waveform once then stop.
  * t - Waveform on trigger.  Execute waveform on MASTERFIRE trigger rising edge.
  * s BOOL  - set pseudo-shutter open (1) or closed (0)
+ * x - All off via clearPin.  Resets all registers.
  * y - return ID string 'octoDAC'
 */
 
@@ -414,6 +416,15 @@ if (stringComplete) {
 		toggleShutter();
 	break;
 
+  case ('x') :
+  // Invoke clear pin
+  // Clear all registers immediately.
+    digitalWrite(clearPin, HIGH);
+    delay(1)
+    digitalWrite(clearPin, LOW);
+   break;
+    
+
 	case ('y') :
 		// Send device ID over serial
 		Serial.println(F("octoDAC"));
@@ -436,7 +447,16 @@ if (stringComplete) {
             }
 
 		    break;
-		
+
+        case ('w'):
+          // Query if waveform is operating
+          if (waveDone) {
+            Serial.println(F("1"));
+          }
+          else {
+            Serial.println(F("0"));
+          }
+        
 		    case ('S'):
 
           // Return current shutter state
