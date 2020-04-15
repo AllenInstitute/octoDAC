@@ -49,7 +49,8 @@ elif shutterState == '0':
 waveArray = np.array([[2, 0, 0], 
                      [2, 5000000, 65535],
                      [2, 10000000, 0]])
-    
+ 
+oD.clearWaveform()
 oD.uploadWaveform(waveArray)    
 
 oD.echoWaveform()

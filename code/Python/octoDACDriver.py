@@ -126,15 +126,24 @@ class octoDACDriver():
             
         else:
             print('Incorrect channel name. Channel must be 0-8')
+            
+    # c
+    def clearWaveform(self):
+        """
+        Clear current waveform from device
+        """
+        self.writeAndRead('c')
 
     # e
     def echoWaveform(self):
         """ 
         Echo current waveform on device
         """
+        self.serial.reset_input_buffer()
+        self.serial.reset_output_buffer()
         self.serial.write('e\n')
         rd = self.serial.read(1000)
-        print rd
+        print(rd)
         
         
         #self.writeAndRead('e')
