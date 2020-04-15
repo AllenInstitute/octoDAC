@@ -39,7 +39,7 @@ What this board will never do:
 - Fancy level shifting 
 - Dual-supply op amp output
 
-###PCB Build Notes:
+### PCB Build Notes:
 Design for PCB has plenty of optional connection pads, depending on desired operation.
 
 On each amplifier unit, there are resistors R(N) and R(N + 1).  N is odd numbers 1 : 15; N + 1 is even numbers 2 : 16.  If both are populated, voltage at output will be Vout = Vin * [1 + R(N) / R (N + 1)].  If unity gain is desired, then R(N) should be 0Ω and R(N + 1) should be unpopulated.  
