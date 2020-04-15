@@ -1,0 +1,49 @@
+Board at OSH Park:
+https://oshpark.com/shared_projects/VEXBdgVj
+
+
+Partlist exported from C:/Users/Rusty Nicovich/Documents/Arduino/octoDAC/PCB/ArduinoOctoDACv2.sch at 4/14/2020 8:55 PM
+
+Part Value            Device                          Package                         Description  
+U1   ARDUINOR3-BPLACE ARDUINOR3-BPLACE                ARDUINOR3-BPLACE                                                                                                  
+C1   1µF              C-USC1206                       C1206                           CAPACITOR                  
+C2   150nF            C-USC1206                       C1206                           CAPACITOR 
+C3   100 nF           C-USC1206                       C1206                           CAPACITOR
+C4   100 nF           C-USC1206                       C1206                           CAPACITOR
+IC1  DAC7568ICPW      DAC7568ICPW                     SOP65P640X120-16N               12-Bit, Octal Channel, Ultra-Low Glitch, Voltage Output DAC with 2.5V, 2ppm/C Internal Reference     
+IC2  OPA4743EA        OPA4743EA                       TSSOP14                         12V, 7MHz, CMOS, Rail-to-Rail I/O Quad OP AMP
+IC3  OPA4743EA        OPA4743EA                       TSSOP14                         12V, 7MHz, CMOS, Rail-to-Rail I/O Quad OP AMP 
+R1                    R-US_R1206                      R1206                           RESISTOR
+R2                    R-US_R1206                      R1206                           RESISTOR
+R3                    R-US_R1206                      R1206                           RESISTOR
+R4                    R-US_R1206                      R1206                           RESISTOR                                                      
+R5                    R-US_R1206                      R1206                           RESISTOR
+R6                    R-US_R1206                      R1206                           RESISTOR
+R7                    R-US_R1206                      R1206                           RESISTOR
+R8                    R-US_R1206                      R1206                           RESISTOR
+R9                    R-US_R1206                      R1206                           RESISTOR
+R10                   R-US_R1206                      R1206                           RESISTOR
+R11                   R-US_R1206                      R1206                           RESISTOR
+R12                   R-US_R1206                      R1206                           RESISTOR
+R13                   R-US_R1206                      R1206                           RESISTOR
+R14                   R-US_R1206                      R1206                           RESISTOR
+R15                   R-US_R1206                      R1206                           RESISTOR                                                             
+R16                   R-US_R1206                      R1206                           RESISTOR                                                            
+R17                   R-US_R1206                      R1206                           RESISTOR                                                            
+R18                   R-US_R1206                      R1206                           RESISTOR                                                           
+R19                   R-US_R1206                      R1206                           RESISTOR                                                            
+R20                   R-US_R1206                      R1206                           RESISTOR                                                
+X1   CHAN1            SMACONNECTOR_EDGE               SMA_EDGELAUNCH                  SMA Connector   
+X2   CHAN2            SMACONNECTOR_EDGE               SMA_EDGELAUNCH                  SMA Connector     
+X3   CHAN3            SMACONNECTOR_EDGE               SMA_EDGELAUNCH                  SMA Connector    
+X4   CHAN4            SMACONNECTOR_EDGE               SMA_EDGELAUNCH                  SMA Connector    
+X5   CHAN5            SMACONNECTOR_EDGE               SMA_EDGELAUNCH                  SMA Connector     
+X6   CHAN6            SMACONNECTOR_EDGE               SMA_EDGELAUNCH                  SMA Connector     
+X7   CHAN7            SMACONNECTOR_EDGE               SMA_EDGELAUNCH                  SMA Connector    
+X8   CHAN8            SMACONNECTOR_EDGE               SMA_EDGELAUNCH                  SMA Connector
+
+Values for R1-R20 depend on configuration and op amp gain desired.
+For default config (0-5v output with on-board 5v regulator; CLR pin for shutter):
+	R1	R3	R5	R7	R9	
+	R11	R13	R15	R18	R19
+are 0Ω resistors.  Remainder are unpopulated. 
