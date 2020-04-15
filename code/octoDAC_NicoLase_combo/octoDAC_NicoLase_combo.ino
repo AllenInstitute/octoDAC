@@ -37,9 +37,9 @@ NicoLase commands:
  *  ? X - Query state of device X.  Supported devices : S = shutter open (0 = closed, 1 = open)
 
 octoDAC Commands:
- * x SHORT - set channel x to value SHORT.  x = 0-8.
+ * x SHORT - set channel x to value SHORT.  x = 1-8.
  * a BYTE;LONG;SHORT - append waveform state to queue
-            byte - channel (0 -> 8)
+            byte - channel (1 -> 8)
             long - time (in microseconds) of waveform timepoint
             short - amplitude to set at timepoint
 
@@ -50,10 +50,17 @@ octoDAC Commands:
  * f - Free-run waveform.  Execute and repeat until stopped.
  * k - Stop waveform free-run
  * n - Single-shot waveform. Execute waveform once then stop.
+ * r - Waveform AND NicoLase triggering on MASTERFIRE pin
  * t - Waveform on trigger.  Execute waveform on MASTERFIRE trigger rising edge.
  * s BOOL  - set pseudo-shutter open (1) or closed (0)
  * x - All off via clearPin.  Resets all registers.
  * y - return ID string 'octoDAC'
+ 
+ * Trigger settings:
+ * X - NicoLase triggering only on MASTERFIRE/Pin D2
+ * t - octoDAC triggering only on MASTERFIRE/Pin D2
+ * r - octoDAC triggering AND NicoLase triggering on MASTERFIRE/Pin D2
+ 
 */
 
 #include <SPI.h>
@@ -63,6 +70,7 @@ octoDAC Commands:
 //------------------------------------------------------//
 
 bool verbose = true;
+bool waveDone = false;
 
 const byte syncPin = 10;
 const byte clearPin = 8;
@@ -76,9 +84,9 @@ bool inputOK = false;
 volatile byte digitCount = 0;
 
 // Waveform generation variables
-volatile unsigned int ampArray[128] = {0};
-volatile unsigned int timeArray[128] = {0};
-volatile byte chanArray[128] = {0};
+volatile unsigned int ampArray[100] = {0};
+volatile unsigned long timeArray[100] = {0};
+volatile byte chanArray[100] = {0};
 volatile byte waveCount = 0;
 unsigned long waveTime = 0;
 volatile byte waveLength = 0;
@@ -118,9 +126,9 @@ volatile unsigned long readVal = 0;
 
 // Pattern Variables
 volatile unsigned int seqArray[64] = {0x00};
-volatile unsigned long seqRepeat[64] = {0};
-volatile unsigned short cycleNum = 0;
-volatile unsigned short repeatNow = 0;
+volatile unsigned int seqRepeat[64] = {0};
+volatile unsigned int cycleNum = 0;
+volatile unsigned int repeatNow = 0;
 volatile unsigned int repeatAddCount = 0;
 volatile unsigned int arraySize = 0;
 volatile unsigned int preIllumSeq = {0x00};
@@ -132,11 +140,11 @@ volatile unsigned long postIllumTime = 0;
 boolean shutterState = false;
 
 // Incoming trigger variables
-const short triggerPin = 2;
+const byte triggerPin = 2;
 boolean LEDToggle = false;
 
 // Post-acquisition trigger variables
-const int outPin = 4;
+const byte outPin = 4;
 boolean followSeq = false;
 long preAcqToCamDelay = 0; 
 
@@ -152,7 +160,7 @@ const String badInputCharNum = "Bad input. Incorrect number of characters.";
 
 void setup() {
   
-  Serial.begin(9600);
+  Serial.begin(115200);
 	 while (!Serial) {
     ; // wait for serial connection
   }
@@ -250,7 +258,6 @@ if (stringComplete) {
   switch (firstChar) {
 
     //case ('0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8') :
-	case ('0') :
 	case ('1') : 
 	case ('2') : 
 	case ('3') : 
@@ -259,7 +266,7 @@ if (stringComplete) {
 	case ('6') : 
 	case ('7') : 
 	case ('8') :
-	// input is '0' through '8'
+	// input is '1' through '8'
 
 		dacChannel = firstChar - 48;
 		//Serial.println(dacChannel);
@@ -281,57 +288,69 @@ if (stringComplete) {
     //      time = time to set value (in microseconds)
     //      amp = value to set channel (0 - 65535)
 
-    Serial.println(inputString);
+    //Serial.println(inputString);
     
     // https://arduino.stackexchange.com/questions/1013/how-do-i-split-an-incoming-string
-    
+   
     for (int i = 2; i < inputString.length(); i++) {
-        if (inputString[i] > 47) {
+
+      switch (inputString[i]){
+        case (' '):
+          // space, do nothing
+          break;
+
+        case ('0'):
+        case ('1'):
+        case ('2'):
+        case ('3'):
+        case ('4'):
+        case ('5'):
+        case ('6'):
+        case ('7'):
+        case ('8'):
+        case ('9'):
           // Numeral 
           readVal *= 10;
           readVal = (inputString[i]-48) + readVal;
-          }
-        else if (inputString[i] == 32) {
-              // space, do nothing
-              waveLength++;
-        }
-       else if (inputString[i] == 59) {
+          break;
+        
+        case (';'):
+            tokCount++;
               // semicolon, separating values 
 
               switch (tokCount) {
-                case (0) :
+                case (1) :
                   // chan value
-                  chanArray[tokCount] = readVal;
+                  chanArray[waveLength] = readVal;
+                  readVal = 0;
                   break;
                   
-                case (1) :
-                  // time value
-                  timeArray[tokCount] = readVal;
-                  break;
-
                 case (2) :
-                  // amp value
-                  timeArray[tokCount] = readVal;
+                  // time value
+                  timeArray[waveLength] = readVal;
+                  readVal = 0;
                   break;
                   
                 default :
                   // Too long.  Print warning.
                   Serial.println(F("Extra characters in entry!"));
-  
-              tokCount++;
-              readVal = 0;
               }
+              break;
                 
-            } // if semicolon
-        
-            else if (inputString[i] == 10) {
+            case (10):
               // Newline
               // Exit loop thanks to end of string
-              readVal = 0;
-              break;
-            }
 
-            else {
+
+              // amp value
+              ampArray[waveLength] = readVal;
+              readVal = 0;
+              tokCount = 0;
+              waveLength++;
+              break;
+            
+
+            default :
               // Bad value in serial input
               // Exit while loop
               Serial.println(F("Bad input. Comma-separated long integers allowed."));
@@ -361,8 +380,7 @@ if (stringComplete) {
 
   case ('e') : 
     Serial.println(F("Echo waveform"));
-
-    for (int i = 0; i > waveLength; i++) {
+    for (int i = 0; i < waveLength; i++) {
       Serial.print(chanArray[i]);
       Serial.print(F(" : "));
       Serial.print(timeArray[i]);
@@ -390,7 +408,13 @@ if (stringComplete) {
     Serial.println(F("Single-shot waveform"));
     runWaveform();
   break;
-
+  
+  case ('r') : 
+	Serial.println(F("Combo triggering mode"));
+	repeatWave = false;
+	attachInterrupt(digitalPinToInterrupt(triggerPin), comboTrigger,  CHANGE);
+  break;
+	
   case ('t') : 
     Serial.println(F("Waveform on trigger"));
     repeatWave = false;
@@ -420,7 +444,7 @@ if (stringComplete) {
   // Invoke clear pin
   // Clear all registers immediately.
     digitalWrite(clearPin, HIGH);
-    delay(1)
+    delay(1);
     digitalWrite(clearPin, LOW);
    break;
     
@@ -1035,9 +1059,7 @@ void DAC8568Write(unsigned int prefix, unsigned int control, unsigned int addres
 void runWaveform() {
   Serial.println("Running waveform");
   verbose = false;
-
-  bool waveDone = false;
-
+  
   waveTime = micros();
   if (not waveDone) {
     // Keep going until waveform is complete
@@ -1048,6 +1070,7 @@ void runWaveform() {
     if(micros() - waveTime > timeArray[waveCount]){
         
         DAC8568Write(prefix, control, chanArray[waveCount], ampArray[waveCount], feature);
+        dacValues[chanArray[waveCount]] = ampArray[waveCount]; // write current dac values as last-triggered waveform
         waveCount++;
     }
 
@@ -1109,7 +1132,7 @@ void toggleShutter() {
 	// On - set all DAC values to dacValues[i] value;
 	
 	if (dacShutterState) {
-		Serial.println(F("Shutter open"));
+		Serial.println(F("Open shutter"));
 		for (int i = 0; i < nDacChannels; i++){
 			
 			DAC8568Write(prefix, control, i, dacValues[i], feature);
@@ -1118,7 +1141,12 @@ void toggleShutter() {
 	}
 	
 	else {
-		Serial.println(F("Shutter closed"));
+		Serial.println(F("Close shutter"));
+
+   // If wave in progress, end it
+   if (not waveDone) {
+    waveDone = true;
+   }
 		
 		// Cycle clearPin
 		digitalWrite(clearPin, HIGH);
@@ -1209,3 +1237,13 @@ void serialInputToLong() {
           inputOK = true;
         }
 }
+
+void comboTrigger() {
+	// If rising edge, trigger waveform
+	if (LEDToggle) {
+		runWaveform();
+	}
+	// On rising or falling edge, trigger NicoLase sequence advance
+	ToggleLED(); 	
+}
+	
