@@ -1,6 +1,6 @@
 ## octoDAC 8-channel analog output Arduino shield
 
-<img src="./octoDACstack.jpg" width="100" height="100">
+<img src="octoDACstack.jpg" width="100" height="100">
 
 A cheap USB-programmable analog output is great for setting intensities, power levels, or general analog signalling in many experimental contexts.  There are lots of solutions when you want one or two of these on your microcontroller.  But, for example, if you want to trim the output of all of the lasers in your launch then you need 4-6 analog outputs.  There are many fewer examples for how to do this at low cost and with straightforward programming.
 
