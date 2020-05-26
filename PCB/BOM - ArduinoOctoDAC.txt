@@ -10,9 +10,9 @@ C1   1µF              C-USC1206                       C1206                    
 C2   150nF            C-USC1206                       C1206                           CAPACITOR 
 C3   100 nF           C-USC1206                       C1206                           CAPACITOR
 C4   100 nF           C-USC1206                       C1206                           CAPACITOR
-IC1  DAC7568ICPW      DAC7568ICPW                     SOP65P640X120-16N               12-Bit, Octal Channel, Ultra-Low Glitch, Voltage Output DAC with 2.5V, 2ppm/C Internal Reference     
-IC2  OPA4743EA        OPA4743EA                       TSSOP14                         12V, 7MHz, CMOS, Rail-to-Rail I/O Quad OP AMP
-IC3  OPA4743EA        OPA4743EA                       TSSOP14                         12V, 7MHz, CMOS, Rail-to-Rail I/O Quad OP AMP 
+IC1  DAC7568ICPW      DAC8568IAPW                     SOP65P640X120-16N               12-Bit, Octal Channel, Ultra-Low Glitch, Voltage Output DAC with 2.5V, 2ppm/C Internal Reference     
+IC2  OPA4743EA        MAX40078AUD+T                   TSSOP14                         12V, 7MHz, CMOS, Rail-to-Rail I/O Quad OP AMP
+IC3  OPA4743EA        MAX40078AUD+T                   TSSOP14                         12V, 7MHz, CMOS, Rail-to-Rail I/O Quad OP AMP 
 R1                    R-US_R1206                      R1206                           RESISTOR
 R2                    R-US_R1206                      R1206                           RESISTOR
 R3                    R-US_R1206                      R1206                           RESISTOR
