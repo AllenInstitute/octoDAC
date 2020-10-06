@@ -1,0 +1,21 @@
+Part            Qtty    MPN/Value            Description/Notes
+
+R1-R16          16      ERA-8AEB103V         10k 0.1% R1206
+R17,R20         2       DNP                  R1206
+R18,R19         2       RMCF1206ZT0R00       0 R1206
+C1,C2,C3,C4     4       GRM188R6YA106MA73D   10µF 35V C0603
+C5              1       885012206072         150nF 25V C0603
+C6-10           5       RMCF0603ZT0R00       100nF 35V C0603
+L1,L2           2       MMZ1005S102CT000     Chip bead 1Kohm @ 100MHz L0402
+IC1             1       DAC8568IAPW          16-Bit, Octal Channel, Ultra-Low Glitch, Voltage Output DAC with 2.5V
+IC2,IC3         2       MAX40078AUD+         12V, 7MHz, CMOS, Rail-to-Rail I/O Quad OP AMP
+IC4             1       LP5907MFX-3.3/NOPB   LDO 3.3V 250MA SOT23-
+IC5             1       74LVC4245AD,118      8BIT 3-5V Level shifter
+X1-8            8       SMA-J-P-H-ST-EM1     SMA Coaxial, Straight Jack, Board Edge / End Launch, 50 ohm
+ANALOG          1       SSQ-106-03-G-S       CONN RCPT 6POS 0.1 GOLD
+DIGI0,POWER     2       SSQ-108-03-G-S       CONN RCPT 8POS 0.1 GOLD
+DIGI1           1       SSQ-110-03-G-S       CONN RCPT 10POS 0.1 GOLD
+
+Alternatives for X1-8:
+X1-8            8       19-70-1-TGG
+X1-8            8       142-0711-821
