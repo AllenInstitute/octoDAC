@@ -14193,17 +14193,6 @@ or will meet your specific requirements.&lt;p&gt;
 </instance>
 <instance part="JP2" gate="1" x="-45.72" y="-35.56" smashed="yes" rot="R270">
 <attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
-<attribute name="COD_FARNELL" x="-45.72" y="-35.56" size="1.778" layer="96" rot="R270" display="off"/>
 <attribute name="NAME" x="-39.37" y="-38.1" size="1.778" layer="95" rot="R90"/>
 </instance>
 <instance part="GND11" gate="1" x="8.89" y="63.5" smashed="yes" rot="MR0">
