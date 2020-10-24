@@ -52,6 +52,7 @@ octoDAC Commands:
  * n - Single-shot waveform. Execute waveform once then stop.
  * r - Waveform AND NicoLase triggering on MASTERFIRE pin
  * t - Waveform on trigger.  Execute waveform on MASTERFIRE trigger rising edge.
+ * m - Invoke test waveform. ~100 ms period square wave on all channels
  * s BOOL  - set pseudo-shutter open (1) or closed (0)
  * x - All off via clearPin.  Resets all registers.
  * y - return ID string 'octoDAC'
@@ -412,6 +413,51 @@ if (stringComplete) {
     Serial.println(F("Stop waveform"));
     repeatWave = false;
   break;
+
+  case ('m') :
+    Serial.println(F("Invoke test waveform"));
+    // Make a square wave on all channels
+    // High from t = 0 to t = 100 ms, low from t = 100 ms to t = 200 ms;
+
+    // Clear out existing waveform
+    for (int i = 0; i < waveLength; i++) {
+      timeArray[i] = 0x00; // set all values to 0
+      ampArray[i] = 0x00; // set all values to 0
+      chanArray[i] = 0;
+    }
+    
+    waveLength = 0;
+
+    // High at t = 0
+    for (int i = 0; i<8; i++){
+      chanArray[waveLength] = i;
+      timeArray[waveLength] = 0;
+      ampArray[waveLength] = 65535;
+      
+      waveLength++;
+    }
+
+    // Low at t = 100 ms
+    for (int i = 0; i<8; i++){
+      chanArray[waveLength] = i;
+      timeArray[waveLength] = 100000;
+      ampArray[waveLength] = 0;
+      
+      waveLength++;
+    }
+
+    // Stretch Low to t = 200 ms
+     for (int i = 0; i<8; i++){
+      chanArray[waveLength] = i;
+      timeArray[waveLength] = 200000;
+      ampArray[waveLength] = 0;
+      
+      waveLength++;
+    }
+
+    repeatWave = true;
+    
+   break;
 
   case ('n') :
     Serial.println(F("Single-shot waveform"));
@@ -1263,5 +1309,3 @@ void waveformTrigger(){
   // Enable waveform to be executed on next loop
   doAWave = true;
 }
-
-
