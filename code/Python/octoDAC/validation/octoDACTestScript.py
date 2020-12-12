@@ -25,10 +25,113 @@ from octoDAC.driver import octoDACDriver
 
 from nicoLase import NicoLaseDriver
 
+config = {'oScopeType' :'RIGOL', # 'RIGOL' or 'TEKTRONIX'
+          'dataPoints' : 1371}
 
-def acquire(channel, port):
+
+def rgb(r, g, b):
+    return [float(r)/255, float(g)/255, float(b)/255] 
+
+
+def acquire(channel, scope, maxTime = []):
+    
+    if config['oScopeType'] == 'RIGOL':
+
+        tVals, data = rigol_pullData(scope, channel)
+        
+    elif config['oScopeType'] == 'TEKTRONIX':
+        
+        tVals, data = tektronix_pullData(scope, channel)
+        
+    else:
+        print('Scope type must be RIGOL or TEKTRONIX')
+        tVals = -1
+        data = -1
+        
+        
+    if maxTime:
+        print('cut down to max time')
+        # Cut data down to max time value only
+        data = np.delete(data, np.where(tVals > maxTime), axis = 0)
+        tVals = np.delete(tVals, np.where(tVals > maxTime))
+        
+        
+    return tVals, data
+    
+def rigol_pullData(scope, channel):
+
+    # https://gist.github.com/StevanxDK/4e6f74162f721f608b0e4993070ccbd2
+    # scope.write('STOP')
+    
+    
+    # Make sure channel can be 'CH1' or 'CHAN1'  and work here
+    channel = 'CHAN' + channel[-1]
+    
+    sample_rate = scope.query_ascii_values(':ACQ:SRAT?')[0]
+    # Select CH1
+    scope.write(":WAV:SOUR " + channel)
+    
+    # Y origin for wav data
+    YORigin = scope.query_ascii_values(":WAV:YOR?")[0]
+    # Y REF for wav data
+    YREFerence = scope.query_ascii_values(":WAV:YREF?")[0]
+    # Y INC for wav data
+    YINCrement = scope.query_ascii_values(":WAV:YINC?")[0]
+    
+    # X origin for wav data
+    XORigin = scope.query_ascii_values(":WAV:XOR?")[0]
+    # X REF for wav data
+    XREFerence = scope.query_ascii_values(":WAV:XREF?")[0]
+    # X INC for wav data
+    XINCrement = scope.query_ascii_values(":WAV:XINC?")[0]
+    
+    # Get time base to calculate memory depth.
+    time_base = scope.query_ascii_values(":TIM:SCAL?")[0]
+    # Calculate memory depth for later use.
+    memory_depth = (time_base*12) * sample_rate
+    
+    # Set the waveform reading mode to RAW.
+    scope.write(":WAV:MODE RAW")
+    # Set return format to Byte.
+    scope.write(":WAV:FORM BYTE")
+    
+    # Set waveform read start to 0.
+    scope.write(":WAV:STAR 1")
+    # Set waveform read stop to 250000.
+    scope.write(":WAV:STOP 250000")
+    
+    # Read data from the scope, excluding the first 9 bytes (TMC header).
+    rawdata = scope.query_binary_values(":WAV:DATA?", datatype='B', data_points = config['dataPoints'])
+    
+    # Check if memory depth is bigger than the first data extraction.
+    if (memory_depth > 250000):
+    	loopcount = 1
+    	# Find the maximum number of loops required to loop through all memory.
+    	loopmax = np.ceil(memory_depth/250000)
+    	while (loopcount < loopmax):
+    		# Calculate the next start of the waveform in the internal memory.
+    		start = (loopcount*250000)+1
+    		scope.write(":WAV:STAR {0}".format(start))
+    		# Calculate the next stop of the waveform in the internal memory
+    		stop = (loopcount+1)*250000
+    		print(stop)
+    		scope.write(":WAV:STOP {0}".format(stop))
+    		# Extent the rawdata variables with the new values.
+    		rawdata.extend(scope.query_binary_values(":WAV:DATA?", datatype='B'))
+    		loopcount = loopcount+1
+    
+    
+    data = (np.asarray(rawdata) - YORigin - YREFerence) * YINCrement
+    
+    # Calcualte data size for generating time axis
+    data_size = len(data)
+    # Create time axis
+    tVals = np.linspace(XREFerence, XINCrement*data_size, data_size) - XORigin
+
+    return tVals, data   
+    
+def tektronix_pullData(scope, channel):
     try:
-        scope = rm.open_resource(port)
         scope.write("DATA:SOURCE " + channel)
         scope.write('wfmo:byt_n 2')
         ymult = float(scope.query('WFMPRE:YMULT?'))
@@ -42,16 +145,44 @@ def acquire(channel, port):
         header = data[:headerlen]
         ADC_wave = data[headerlen:-1]
         ADC_wave = np.array(unpack('%sB' % len(ADC_wave),ADC_wave))
-        Volts = (ADC_wave - yoff) * ymult  + yzero
+        Volts = (ADC_wave - yoff) * ymult  + yzero.as_integer_ratio()
         Time = np.arange(0, (xincr * len(Volts)), xincr)-((xincr * len(Volts))/2-xdelay)
         return Time,Volts
     except IndexError:
         return 0,0
     
+def timeAxis_rigol(tVals):
+    # See if we should use a different time axis
+    if (tVals[-1] < 1e-3):
+        tVals = tVals * 1e6
+        tUnit = "µS"
+    elif (tVals[-1] < 1):
+        tVals = tVals * 1e3
+        tUnit = "mS"
+    else:
+    	tUnit = "S"
+        
+    return time, tUnit
 
-def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
+
+def makePlots_rigol(time, data1, data2, tUnit, trigColor = rgb(52, 152, 219), testColor = rgb(231, 76, 60)):
     
-    testArray = np.zeros((2500, testRepeats*3))
+    # Graph data with pyplot.
+    plotHandle = plt.plot(time, data1, color = trigColor)
+    plt.plot(time, data2, color = testColor)
+    #plot.title("Oscilloscope Channel 1")
+    plt.ylabel("Voltage (V)")
+    plt.xlabel("Time (" + tUnit + ")")
+    plt.xlim(time[0], time[-1])
+    plt.subplots_adjust(left=0.1,top=0.98,bottom=0.1,right=0.8)
+    plt.show()
+    
+    return plotHandle
+    
+
+def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1, maxTime = []):
+    
+    testArray = np.zeros((config['dataPoints'], testRepeats*3))
     
     trgDev.setPreCollectionSeq(0b111111)
     trgDev.setPreSeqExTime(3)
@@ -96,8 +227,8 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         for k in range(testRepeats):
             trgDev.callPreSeq()
         
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+            val1 = acquire("CH1", scopePort)
+            val2 = acquire("CH2", scopePort)
             
             
             testArray[:,3*k+0] = val1[0]
@@ -123,8 +254,8 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         for k in range(testRepeats):
             trgDev.callPreSeq()
         
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+            val1 = acquire("CH1", scopePort)
+            val2 = acquire("CH2", scopePort)
             
             
             testArray[:,3*k+0] = val1[0]
@@ -146,8 +277,8 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         
         for k in range(testRepeats):
         
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+            val1 = acquire("CH1", scopePort, maxTime = maxTime)
+            val2 = acquire("CH2", scopePort, maxTime = maxTime)
             
             
             testArray[:,3*k+0] = val1[0]
@@ -186,8 +317,8 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         for k in range(testRepeats):
             trgDev.callPreSeq()
         
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+            val1 = acquire("CH1", scopePort, maxTime = maxTime)
+            val2 = acquire("CH2", scopePort, maxTime = maxTime)
             
             
             testArray[:,3*k+0] = val1[0]
@@ -226,8 +357,8 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         for k in range(testRepeats):
             trgDev.callPreSeq()
         
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+            val1 = acquire("CH1", scopePort, maxTime = maxTime)
+            val2 = acquire("CH2", scopePort, maxTime = maxTime)
             
             
             testArray[:,3*k+0] = val1[0]
@@ -266,8 +397,8 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         for k in range(testRepeats):
             trgDev.callPreSeq()
         
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+            val1 = acquire("CH1", scopePort, maxTime = maxTime)
+            val2 = acquire("CH2", scopePort, maxTime = maxTime)
             
             
             testArray[:,3*k+0] = val1[0]
@@ -293,8 +424,8 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         for k in range(testRepeats):
             trgDev.callPreSeq()
         
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+            val1 = acquire("CH1", scopePort, maxTime = maxTime)
+            val2 = acquire("CH2", scopePort, maxTime = maxTime)
             
             
             testArray[:,3*k+0] = val1[0]
@@ -305,9 +436,15 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         
         testDev.clearWaveform()
         
+        # # Subtract dead time for Arduino
+        # waveForm = np.array([[1, 0, 65535],
+        #                      [1, 200, 0],
+        #                      [1, 338, 0]])
+    
+        # Subtract dead time for Arduino
         waveForm = np.array([[1, 0, 65535],
-                             [1, 200, 0],
-                             [1, 338, 0]])
+                              [1, 200, 0],
+                              [1, 388, 0]])
     
         testDev.uploadWaveform(waveForm)
         testDev.freeRunWaveform()
@@ -320,8 +457,8 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         for k in range(testRepeats):
             trgDev.callPreSeq()
         
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+            val1 = acquire("CH1", scopePort, maxTime = maxTime)
+            val2 = acquire("CH2", scopePort, maxTime = maxTime)
             
             
             testArray[:,3*k+0] = val1[0]
@@ -329,28 +466,27 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
             testArray[:,3*k+2] = val2[1]
             
     elif (testType == 'linearity'):
+        testDev.clearWaveform()
         
-        
-        stepSize = 65535/(testRepeats-1)
-        
-        testDev.setChannel(channel, 0)
-        
+        stepSize = int(65535/(testRepeats-1))
+                
         time.sleep(0.5)
         
         trgDev.setPreCollectionSeq(0b111111)
         trgDev.setPreSeqExTime(3)
-            
+         
         for k in range(testRepeats):
+            print('Set channel ' + str(channel) + ' to ' + str(k*stepSize))
             testDev.setChannel(channel, (k)*stepSize)
-            time.sleep(0.5)
-            
-            trgDev.callPreSeq()
+            time.sleep(1)
+            # trgDev.callPreSeq()
+            time.sleep(1)
 
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+           # val1 = acquire("CH1", scopePort, maxTime = maxTime)
+            val2 = acquire("CH2", scopePort, maxTime = maxTime)
             
-            testArray[:,3*k+0] = val1[0]
-#            testArray[:,3*k+1] = np.ones_like(val1[1])*(k)*stepSize
+            testArray[:,3*k+0] = val2[0]
+            #testArray[:,3*k+1] = np.ones_like(val1[1])*(k)*stepSize
             testArray[:,3*k+1] = 5*float(k*stepSize)/65535
             testArray[:,3*k+2] = val2[1]
             
@@ -362,7 +498,8 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         
         stepSize = 8
         
-        testDev.setChannel(channel, 32112)
+        # testDev.setChannel(channel, 32112)
+        testDev.setChannel(channel, 3276)
         
         time.sleep(0.5)
         
@@ -370,17 +507,55 @@ def deviceTest(trgDev, testDev, testType, testRepeats, scopePort, channel = 1):
         trgDev.setPreSeqExTime(3)
             
         for k in range(testRepeats):
-            testDev.setChannel(channel, 32112+(k)*stepSize)
-            time.sleep(0.5)
+            testDev.setChannel(channel, 3276+(k)*stepSize)
+            time.sleep(1)
             
-            trgDev.callPreSeq()
-
-            val1 = acquire("CH1", rm.list_resources()[0])
-            val2 = acquire("CH2", rm.list_resources()[0])
+            # trgDev.callPreSeq()
+            # time.sleep(1)
+            # val1 = acquire("CH1", scopePort, maxTime = maxTime)
+            val2 = acquire("CH2", scopePort, maxTime = maxTime)
             
-            testArray[:,3*k+0] = val1[0]
+            testArray[:,3*k+0] = val2[0]
 #            testArray[:,3*k+1] = np.ones_like(val1[1])*(k)*stepSize
             testArray[:,3*k+1] = 5*float(k*stepSize)/65535
+            testArray[:,3*k+2] = val2[1]
+            
+    elif (testType == 'sineWaveSingle'):
+        
+        # Single 0-5v sine wave, fast as possible w/ 2048 samples/channel
+        
+        nSamplesPerPeriod = 100
+        nPeriods = 1
+        
+        # Make discretized sine wave
+        xVals = np.linspace(0, 2*np.pi*nPeriods, nSamplesPerPeriod*nPeriods)
+        yVals = (65535*(0.5*np.sin(xVals)+0.5)).astype('uint16')
+        
+        # [[chan time value]]
+        waveArray = np.vstack((np.ones((nSamplesPerPeriod*nPeriods)).T, 
+                       np.linspace(0, nSamplesPerPeriod*nPeriods, nSamplesPerPeriod*nPeriods), 
+                       yVals)).T.astype('uint16')
+        testDev.clearWaveform()
+        testDev.uploadWaveform(waveArray)
+        
+        # Wait for upload to finish
+        uploadCheck = testDev.echoWaveform()
+               
+        testDev.waveformOnTrigger()
+        
+        trgDev.setPreCollectionSeq(0b111111)
+        trgDev.setPreSeqExTime(3)
+            
+        for k in range(testRepeats):
+            
+            trgDev.callPreSeq()
+            # time.sleep(1)
+            val1 = acquire("CH1", scopePort, maxTime = maxTime)
+            val2 = acquire("CH2", scopePort, maxTime = maxTime)
+            
+            testArray[:,3*k+0] = val2[0]
+#            testArray[:,3*k+1] = np.ones_like(val1[1])*(k)*stepSize
+            testArray[:,3*k+1] = val1[1]
             testArray[:,3*k+2] = val2[1]
     
     else:
@@ -396,7 +571,8 @@ def plotTestArray(testArray, saveDest, returnHandle = False):
     trigColor = rgb(52, 152, 219)
     testColor = rgb(231, 76, 60)
     
-    for k in range(testArray.shape[1]/3):
+    for k in range(int(testArray.shape[1]/3)):
+        print(k)
         plt.plot(testArray[:,3*k], testArray[:,3*k+1], alpha = np.sqrt(1./(testArray.shape[1]/3)), color = trigColor)
         plt.plot(testArray[:,3*k], testArray[:,3*k+2], alpha = np.sqrt(1./(testArray.shape[1]/3)), color = testColor)
     plt.ylabel('V')
@@ -413,21 +589,24 @@ def plotTestArray(testArray, saveDest, returnHandle = False):
         return plt.gca()
     
     
-def startOscope():
-    rm = pyvisa.ResourceManager()
-    scope = rm.open_resource(rm.list_resources()[0])
+def startOscope(timeout = 20000, chunk_size = 1024000):
 
-    print(scope.query('*IDN?'))
+    rm = pyvisa.ResourceManager()
+    
+    rm.timeout = timeout
+    rm.chunk_size = chunk_size
+    
+    instID = rm.list_resources()[0]
+    
+    scope = rm.open_resource(instID)
     
     return scope, rm
     
-
+#%%
 def main():
 
     #%%
     scope, rm = startOscope()
-
-
 
     #%% Triggering device
     # Set up as NicoLase w/ octoDAC_NicoLase_combo.ino sketch
@@ -439,7 +618,7 @@ def main():
     # Set up as NicoLase + octoDAC stack 
     # octoDAC_NicoLase_combo.ino sketch loaded 
     
-    ser2 = octoDACDriver.octoDACStart('COM5', 115200, 1)
+    ser2 = octoDACDriver.octoDACStart('COM7', 115200, 1)
     
     o2 = octoDACDriver.octoDACDriver(ser2, verbose = True)
     n2 = NicoLaseDriver.NicoLaseDriver(ser2, verbose = True)
@@ -455,10 +634,10 @@ def main():
     testType = 'digitalJitter'
     nTestRepeats = 100
     
-    testArray = deviceTest(n1, n2, testType, nTestRepeats, rm.list_resources()[0])
-    plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
+    testArray = deviceTest(n1, n2, testType, nTestRepeats, scope)
+    plotTestArray(testArray, os.path.join('.\output', testType + 'CH1.png'))
     dFrame = pd.DataFrame(testArray)
-    dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
+    dFrame.to_csv(os.path.join('.\output', testType + 'CH1.csv'), header = False)
     
     
     #%% 
@@ -476,7 +655,7 @@ def main():
     testType = 'analogJitter'
     nTestRepeats = 100
     
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0])
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope)
     plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
     dFrame = pd.DataFrame(testArray)
     dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
@@ -495,7 +674,7 @@ def main():
     testType = 'tophatJitter'
     nTestRepeats = 100
     
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0])
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope)
     plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
     dFrame = pd.DataFrame(testArray)
     dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
@@ -513,14 +692,13 @@ def main():
     testType = 'analogCycleJitter'
     nTestRepeats = 100
     
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0])
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope)
     plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
     dFrame = pd.DataFrame(testArray)
     dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
     
     #%% 
     # Jitter between triggering NicoLase out and test octoDAC, with sequences on all channels.
-    # CH1 is trgDev output in pre-acquisition sequence
     # Trigger scope on nicoLase output, but in ExtTrigger.  Won't be displayed.
     # trgDev output in pre-acq seq -> testDev MASTERFIRE
     # CH1 is octoDAC CHAN8 output
@@ -534,7 +712,7 @@ def main():
     testType = 'analogJitterAllChannels'
     nTestRepeats = 100
     
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0])
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope)
     plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
     dFrame = pd.DataFrame(testArray)
     dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
@@ -555,7 +733,7 @@ def main():
     testType = 'topHatJitterAllChannels'
     nTestRepeats = 100
     
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0])
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope, maxTime = 1e-3)
     plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
     dFrame = pd.DataFrame(testArray)
     dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
@@ -577,7 +755,7 @@ def main():
     testType = 'topHatJitterAllChansLonger'
     nTestRepeats = 100
     
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0])
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope, maxTime = 1.75e-3)
     plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
     dFrame = pd.DataFrame(testArray)
     dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
@@ -597,7 +775,7 @@ def main():
     testType = 'waveformNaive'
     nTestRepeats = 100
     
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0])
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope, maxTime = 2e-3)
     plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
     dFrame = pd.DataFrame(testArray)
     dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
@@ -617,7 +795,7 @@ def main():
     testType = 'waveformCorrected'
     nTestRepeats = 100
     
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0])
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope, maxTime = 2e-3)
     plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
     dFrame = pd.DataFrame(testArray)
     dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
@@ -642,14 +820,14 @@ def main():
     # Do again w/ ~1 ms/div and AC coupling to look at noise explicitly ('chanx_fast')
     
     testType = 'linearity'
-    nTestRepeats = 10
+    nTestRepeats = 100
     
-    channel = 'chan1_fast'
+    channel = 'chan1'
     
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0], channel = 1)
-    plotTestArray(testArray, os.path.join('.\output', testType + '_' + channel + '.png'))
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope, channel = 1, maxTime = 15e-3)
+    plotTestArray(testArray, os.path.join('.\output', testType + '_' + channel + '_Vin.png'))
     dFrame = pd.DataFrame(testArray)
-    dFrame.to_csv(os.path.join('.\output', testType + '_' + channel + '.csv'), header = False)
+    dFrame.to_csv(os.path.join('.\output', testType + '_' + channel + '_Vin.csv'), header = False)
     
     
     #%%
@@ -671,11 +849,42 @@ def main():
     testType = 'stepResolution'
     nTestRepeats = 165
     #
-    testArray = deviceTest(n1, o2, testType, nTestRepeats, rm.list_resources()[0])
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope)
     plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
     dFrame = pd.DataFrame(testArray)
     dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
     
+    #%% Complex waveforms - sine wave
+    # Want a sine wave at 2048 points/cycle resolution
+    # Do single-shot waveforms after trigger
+    # See how fast this can go
+    
+    testType = 'sineWaveSingle'
+    nTestRepeats  = 100
+    
+    testArray = deviceTest(n1, o2, testType, nTestRepeats, scope, maxTime = 2e-3)
+    plotTestArray(testArray, os.path.join('.\output', testType + '.png'))
+    dFrame = pd.DataFrame(testArray)
+    dFrame.to_csv(os.path.join('.\output', testType + '.csv'), header = False)
+    
+    #%%
+    nSamplesPerPeriod = 100
+    nPeriods = 1
+    
+    # Make discretized sine wave
+    xVals = np.linspace(0, 2*np.pi*nPeriods, nSamplesPerPeriod*nPeriods)
+    yVals = (65535*(0.5*np.sin(xVals)+0.5)).astype('uint16')
+    
+    # [[chan time value]]
+    waveArray = np.vstack((np.ones((nSamplesPerPeriod*nPeriods)).T, 
+                   np.linspace(0, nSamplesPerPeriod*nPeriods, nSamplesPerPeriod*nPeriods), 
+                   yVals)).T.astype('uint16')
+    o2.clearWaveform()
+    # o2.uploadWaveform(waveArray)
+    
+    # Run via USB
+    for k in waveArray:
+        o2.setChannel(k[0], k[2])
     
     #%%
     ser1.close()

@@ -17,7 +17,8 @@ import numpy as np
 
 returnMessages = {
     'CMD_NOT_DEFINED': 0x15,
-    'DeviceID' : 'octoDAC'
+    'DeviceID' : 'octoDAC',
+    'ENCODING' : 'utf8'
     }
 
 def octoDACStart(comPort, baud, timeOut):
@@ -46,11 +47,12 @@ class octoDACDriver():
     Class for communicating with octoDAC Arduino Shield + sketch
     
     """
-    def __init__(self, serialDevice, verbose = False):
+    def __init__(self, serialDevice, verbose = False, maxUploadLines = 100):
 
         # Once connected, check that port actually has octoDAC on the receiving end
         self.serial = serialDevice
         self.verbose = verbose
+        self.maxUploadLines = maxUploadLines
         devID = self.getIdentification()
         if devID == returnMessages['DeviceID']:
             if self.verbose:
@@ -78,13 +80,14 @@ class octoDACDriver():
         """
         self.serial.reset_input_buffer()
         self.serial.reset_output_buffer()
-        self.serial.write(sendString + '\n')
-        ret = self.serial.readline().strip()
+        sendString = sendString + '\n'
+        self.serial.write(sendString.encode(returnMessages['ENCODING']))
+        ret = self.serial.readline().decode(returnMessages['ENCODING']).strip('\r\n')
         
         if self.verbose:
             print(ret)
             
-        return
+        return ret
     
 # Upload waveform
 # Helper function for 'a' command
@@ -116,8 +119,8 @@ class octoDACDriver():
             # Waveform max length is 128 points total. 
             # Truncate here and log warning on truncation.
             
-            if (waveArray.shape[1] >= 100):
-                waveArray = waveArray[:100,:]
+            if (waveArray.shape[1] >= self.maxUploadLines):
+                waveArray = waveArray[:self.maxUploadLines,:]
                 print("Waveform array longer than 100 lines. Truncating to first 100 lines.")
             
             
@@ -162,8 +165,8 @@ class octoDACDriver():
         """
         self.serial.reset_input_buffer()
         self.serial.reset_output_buffer()
-        self.serial.write('e\n')
-        rd = self.serial.read(1000)
+        self.serial.write('e\n'.encode(returnMessages['ENCODING']))
+        rd = self.serial.readall().decode(returnMessages['ENCODING'])
         print(rd)
         
         
@@ -221,15 +224,14 @@ class octoDACDriver():
         Set all outputs to stored value
         Open pseudo-shutter
         """
-        self.serial.write('? s\n')
-        idn = self.serial.readline().strip()
+        idn = self.writeAndRead('? s')
         return idn 
         
     # y
     def getIdentification(self):
         """ identification query """
-        self.serial.write('y\n')
-        idn = self.serial.readline().strip()
+        idn = self.writeAndRead('y')
+        print(idn)
         return idn
     
 if __name__ == '__main__':

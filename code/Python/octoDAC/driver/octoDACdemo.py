@@ -10,7 +10,7 @@ import time
 from octoDACDriver import octoDACDriver
 import numpy as np
 
-comPort = 'COM4'
+comPort = 'COM3'
 baud = 115200
 timeOut = 1
 
@@ -47,11 +47,12 @@ elif shutterState == '0':
     
 # Upload a simple waveform on Chan2
 waveArray = np.array([[2, 0, 0], 
-                     [2, 5000000, 65535],
-                     [2, 10000000, 0]])
+                     [2, 500000, 65535],
+                     [2, 1000000, 0]])
  
 oD.clearWaveform()
 oD.uploadWaveform(waveArray)    
+oD.freeRunWaveform()
 
 oD.echoWaveform()
 

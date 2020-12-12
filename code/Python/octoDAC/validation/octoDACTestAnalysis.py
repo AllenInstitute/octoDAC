@@ -28,7 +28,7 @@ linearity
 stepResolution
 """
 
-basePath = r"C:\Users\Rusty Nicovich\Documents\Arduino\octoDAC\code\Python\octoDAC\validation\output"
+basePath = r"C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output"
 
 writeFile = "octoDACanalysisResults.txt"
 
@@ -39,13 +39,13 @@ fID.write('octoDAC analysis results\n')
 # -----------------------------------------
 # digitalJitter
 # Measure time from trigger to test
-readFile = os.path.join(basePath, 'digitalJitter.csv')
+readFile = os.path.join(basePath, 'digitalJitterCH1.csv')
 data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
 #hand = plotTestArray(data, 'test.png', returnHandle = True)
 
-deltaT = np.zeros((data.shape[1]/3, 1))
+deltaT = np.zeros((int(data.shape[1]/3), 1))
 # Measure trigger-signal deltaT value
-for k in range(data.shape[1]/3):
+for k in range(int(data.shape[1]/3)):
     t = data[:,3*k+0]
     trig = data[:,3*k+1]
     sig = data[:,3*k+2]
@@ -69,9 +69,9 @@ readFile = os.path.join(basePath, 'analogJitter.csv')
 data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
 #hand = plotTestArray(data, 'test.png', returnHandle = True)
 
-deltaT = np.zeros((data.shape[1]/3, 1))
+deltaT = np.zeros((int(data.shape[1]/3), 1))
 # Measure trigger-signal deltaT value
-for k in range(data.shape[1]/3):
+for k in range(int(data.shape[1]/3)):
     t = data[:,3*k+0]
     trig = data[:,3*k+1]
     sig = data[:,3*k+2]
@@ -97,9 +97,9 @@ data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
 #hand = plotTestArray(data, 'test.png', returnHandle = True)
 
 expectedValue = 100e-6 # seconds
-deltaT = np.zeros((data.shape[1]/3, 1))
+deltaT = np.zeros((int(data.shape[1]/3), 1))
 # Measure trigger-signal deltaT value
-for k in range(data.shape[1]/3):
+for k in range(int(data.shape[1]/3)):
     t = data[:,3*k+0]
     trig = data[:,3*k+1]
     sig = data[:,3*k+2]
@@ -122,9 +122,9 @@ data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
 #hand = plotTestArray(data, 'test.png', returnHandle = True)
 
 expectedValue = 100e-6 # seconds
-deltaT = np.zeros((data.shape[1]/3, 1))
+deltaT = np.zeros((int(data.shape[1]/3), 1))
 # Measure trigger-signal deltaT value
-for k in range(data.shape[1]/3):
+for k in range(int(data.shape[1]/3)):
     t = data[:,3*k+0]
     trig = data[:,3*k+1]
     sig = data[:,3*k+2]
@@ -146,10 +146,10 @@ readFile = os.path.join(basePath, 'analogJitterAllChannels.csv')
 data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
 #hand = plotTestArray(data, 'test.png', returnHandle = True)
 
-deltaTFirst = np.zeros((data.shape[1]/3, 1))
-deltaTLast = np.zeros((data.shape[1]/3, 1))
+deltaTFirst = np.zeros((int(data.shape[1]/3), 1))
+deltaTLast = np.zeros((int(data.shape[1]/3), 1))
 # Measure trigger-signal deltaT value
-for k in range(data.shape[1]/3):
+for k in range(int(data.shape[1]/3)):
     t = data[:,3*k+0]
     trig = data[:,3*k+1]
     sig = data[:,3*k+2]
@@ -174,10 +174,10 @@ data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
 #hand = plotTestArray(data, 'test.png', returnHandle = True)
 
 expectedT = 100e-6;
-deltaTFirst = np.zeros((data.shape[1]/3, 1))
-deltaTLast = np.zeros((data.shape[1]/3, 1))
+deltaTFirst = np.zeros((int(data.shape[1]/3), 1))
+deltaTLast = np.zeros((int(data.shape[1]/3), 1))
 # Measure trigger-signal deltaT value
-for k in range(data.shape[1]/3):
+for k in range(int(data.shape[1]/3)):
     t = data[:,3*k+0]
     trig = data[:,3*k+1]
     sig = data[:,3*k+2]
@@ -206,10 +206,10 @@ data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
 #hand = plotTestArray(data, 'test.png', returnHandle = True)
 
 expectedT = 500e-6;
-deltaTFirst = np.zeros((data.shape[1]/3, 1))
-deltaTLast = np.zeros((data.shape[1]/3, 1))
+deltaTFirst = np.zeros((int(data.shape[1]/3), 1))
+deltaTLast = np.zeros((int(data.shape[1]/3), 1))
 # Measure trigger-signal deltaT value
-for k in range(data.shape[1]/3):
+for k in range(int(data.shape[1]/3)):
     t = data[:,3*k+0]
     trig = data[:,3*k+1]
     sig = data[:,3*k+2]
@@ -244,14 +244,14 @@ expectedValues = 200e-6
 deltaTHigh = []
 deltaTLow = []
 # Measure trigger-signal deltaT value
-for k in range(data.shape[1]/3):
+for k in range(int(data.shape[1]/3)):
     t = data[:,3*k+0]
     trig = data[:,3*k+1]
     sig = data[:,3*k+2]
     
     risingEdges = []
     fallingEdges = []
-    for p in range(data.shape[0]-1):
+    for p in range(int(data.shape[0]-1)):
         
         if (sig[p] < 2.5) and (sig[p+1] > 2.5):
             risingEdges.append(p)
@@ -298,14 +298,14 @@ expectedValues = 200e-6
 deltaTHigh = []
 deltaTLow = []
 # Measure trigger-signal deltaT value
-for k in range(data.shape[1]/3):
+for k in range(int(data.shape[1]/3)):
     t = data[:,3*k+0]
     trig = data[:,3*k+1]
     sig = data[:,3*k+2]
     
     risingEdges = []
     fallingEdges = []
-    for p in range(data.shape[0]-1):
+    for p in range(int(data.shape[0]-1)):
         
         if (sig[p] < 2.5) and (sig[p+1] > 2.5):
             risingEdges.append(p)
@@ -347,14 +347,42 @@ fID.write('-----------------\n')
 fID.write('Linearity measurements\n')
 fID.write('Set value, measure for 250 ms.  Plot mean + std dev at each value.\n')
 
+fList = list()
+
+
+# fileList = ['linearity_chan1.csv',
+#             'linearity_chan2.csv',
+#             'linearity_chan3.csv',
+#             'linearity_chan4.csv',
+#             'linearity_chan5.csv',
+#             'linearity_chan6.csv',
+#             'linearity_chan7.csv',
+#             'linearity_chan8.csv']
+
+# fList.append(fileList)
+
+
+# fileList = ['linearity_chan1_Vin.csv',
+#             'linearity_chan2_Vin.csv',
+#             'linearity_chan3_Vin.csv',
+#             'linearity_chan4_Vin.csv',
+#             'linearity_chan5_Vin.csv',
+#             'linearity_chan6_Vin.csv',
+#             'linearity_chan7_Vin.csv',
+#             'linearity_chan8_Vin.csv']
+
+# fList.append(fileList)
+
 fileList = ['linearity_chan1.csv',
-            'linearity_chan2.csv',
-            'linearity_chan3.csv',
-            'linearity_chan4.csv',
-            'linearity_chan5.csv',
-            'linearity_chan6.csv',
-            'linearity_chan7.csv',
             'linearity_chan8.csv']
+
+fList.append(fileList)
+
+
+fileList = ['linearity_chan1_Vin.csv',
+            'linearity_chan8_Vin.csv']
+
+fList.append(fileList)
 
 colorList = [rgb(52, 152, 219),
              rgb(26, 188, 156), 
@@ -365,135 +393,184 @@ colorList = [rgb(52, 152, 219),
              rgb(231, 76, 60),
              rgb(192, 57, 43)]
 
-linPlot = plt.figure()
 
-lineFits = []
+for fL, fileList in enumerate(fList):
 
-for i, f in enumerate(fileList):
-    readFile = os.path.join(basePath, f)
-    data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
+    linPlot = plt.figure()
+    print(fileList)
     
-    plotVals = np.zeros((data.shape[1]/3, 3))
     
-    for k in range(data.shape[1]/3):
-        t = data[:,3*k+0]
-        trig = data[:,3*k+1]
-        sig = data[:,3*k+2]
+    lineFits = []
+    
+    
+    
+    for i, f in enumerate(fileList):
+        readFile = os.path.join(basePath, f)
+        data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
         
-        plotVals[k,0] = np.mean(trig)
-        plotVals[k,1] = np.mean(sig)
-        plotVals[k,2] = np.std(sig)
+        plotVals = np.zeros((int(data.shape[1]/3), 3))
         
-    # Fit to a line
-    z = np.polyfit(plotVals[:,0], plotVals[:,1], 1)
-    lineFits.append(z)
-    p = np.poly1d(z)
-    xp = np.linspace(0, 5, 10)
-    
-    plt.errorbar(plotVals[:,0], plotVals[:,1], yerr = plotVals[:,2], fmt = '.', 
-                 color = colorList[i], markersize = 4)
-    plt.plot(xp, p(xp), color = colorList[i])
-    
-    fID.write('File : {}\n'.format(readFile))
-    fID.write('Line fits : {}, {} (slope, offset)\n'.format(z[0], z[1]))
+        for k in range(int(data.shape[1]/3)):
+            t = data[:,3*k+0]
+            trig = data[:,3*k+1]
+            sig = data[:,3*k+2]
+            
+            plotVals[k,0] = np.mean(trig)
+            plotVals[k,1] = np.mean(sig)
+            plotVals[k,2] = np.std(sig)
+            
+        # Fit to a line
+        z = np.polyfit(plotVals[:,0], plotVals[:,1], 1)
+        lineFits.append(z)
+        p = np.poly1d(z)
+        xp = np.linspace(0, 5, 10)
         
-plt.plot([0, 5], [0, 5], color = rgb(52, 73, 94))
-plt.show()
-plt.xlabel('Set value (V)')
-plt.ylabel('Measured value (V)')
-
-plt.savefig(os.path.join(basePath, 'linearityPlots.png'), bbox_inches='tight', dpi = 300)
+        plt.errorbar(plotVals[:,0], plotVals[:,1], yerr = plotVals[:,2], fmt = '.', 
+                     color = colorList[i], markersize = 4)
+        plt.plot(xp, p(xp), color = colorList[i])
+        
+        fID.write('File : {}\n'.format(readFile))
+        fID.write('Line fits : {}, {} (slope, offset)\n'.format(z[0], z[1]))
+            
+    plt.plot([0, 5], [0, 5], color = rgb(52, 73, 94))
+    plt.show()
+    plt.xlabel('Set value (V)')
+    plt.ylabel('Measured value (V)')
+    
+    figPath = 'linearityPlots.png'
+    if fL == 1:
+        figPath = 'linearityPlots_Vin.png'
+    
+    plt.savefig(os.path.join(basePath, figPath), bbox_inches='tight', dpi = 300)
 
 #%% Fast time ripple
 
 # Measure AC voltage ripple at 10 set values, 5 ms window
 
+
+fList = list()
 fileList = ['linearity_chan1_fast.csv',
             'linearity_chan8_fast.csv']
+fList.append(fileList)
+
+# fileList = ['linearity_chan1_Vin_fast.csv', 
+#             'linearity_chan8_Vin_fast.csv']
+
+# fList.append(fileList)
+
 
 colorList = [rgb(52, 152, 219),
              rgb(192, 57, 43)]
-plt.figure()
-for i, f in enumerate(fileList):
+
+for fL, fileList in enumerate(fList):
+    
+    print(fileList)
+
+    plt.figure()
+    for i, f in enumerate(fileList):
+        readFile = os.path.join(basePath, f)
+        data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
+        
+        plotVals = np.zeros((int(data.shape[1]/3), 3))
+        
+        for k in range(int(data.shape[1]/3)):
+            t = data[:,3*k+0]
+            trig = data[:,3*k+1]
+            sig = data[:,3*k+2]
+            
+            plt.errorbar(np.mean(trig), np.mean(sig), yerr = np.std(sig), fmt = '.', 
+                         color = colorList[i], markersize = 8)
+            
+    plt.plot([0, 5], [0, 0], color = rgb(149, 165, 166), linestyle = ':')
+    plt.show()
+    plt.xlabel('Set value (V)')
+    plt.ylabel('AC ripple (V)') 
+    
+    if fL == 0:
+        saveName = 'acRippleSummary.png'
+    elif fL == 1:
+        saveName = 'acRippleSummary_Vin.png'
+    
+    plt.savefig(os.path.join(basePath, saveName), bbox_inches='tight', dpi = 300)
+    
+    # Plot example of chan8 ripple at 1V, 5V
+    f = fileList[-1]
     readFile = os.path.join(basePath, f)
     data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
     
-    plotVals = np.zeros((data.shape[1]/3, 3))
+    plotVals = np.zeros((int(data.shape[1]/3), 3))
     
-    for k in range(data.shape[1]/3):
+    plt.figure()
+    for k in range(int(data.shape[1]/3)):
         t = data[:,3*k+0]
         trig = data[:,3*k+1]
         sig = data[:,3*k+2]
         
-        plt.errorbar(np.mean(trig), np.mean(sig), yerr = np.std(sig), fmt = '.', 
-                     color = colorList[i], markersize = 8)
-        
-plt.plot([0, 5], [0, 0], color = rgb(149, 165, 166), linestyle = ':')
-plt.show()
-plt.xlabel('Set value (V)')
-plt.ylabel('AC ripple (V)') 
-
-plt.savefig(os.path.join(basePath, 'acRippleSummary.png'), bbox_inches='tight', dpi = 300)
-
-# Plot example of chan8 ripple at 1V, 5V
-f = fileList[-1]
-readFile = os.path.join(basePath, f)
-data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
-
-plotVals = np.zeros((data.shape[1]/3, 3))
-
-plt.figure()
-for k in range(data.shape[1]/3):
-    t = data[:,3*k+0]
-    trig = data[:,3*k+1]
-    sig = data[:,3*k+2]
+        if (np.abs(trig[0] - 0.5) < 0.1):
+            print('1')
+            legHand1 = plt.plot(t, sig, color = rgb(231, 76, 60), zorder = 1, label = '0.54V')
+            
+        elif (np.abs(trig[0] - 4.4) < 0.05):
+            print('5')
+            legHand8 = plt.plot(t, sig, color = rgb(192, 57, 43), zorder = 0, label = '4.44V')
+            
+    plt.legend()
+    plt.xlabel('time (sec)')
+    plt.ylabel('AC ripple (V)')
     
-    if (np.abs(trig[0] - 0.5) < 0.1):
-        print('1')
-        legHand1 = plt.plot(t, sig, color = rgb(231, 76, 60), zorder = 1, label = '0.54V')
-        
-    elif (np.abs(trig[0] - 5) < 0.05):
-        print('5')
-        legHand8 = plt.plot(t, sig, color = rgb(192, 57, 43), zorder = 0, label = '5.0V')
-        
-plt.legend()
-plt.xlabel('time (sec)')
-plt.ylabel('AC ripple (V)')
-        
-plt.savefig(os.path.join(basePath, 'acRippleChan8.png'), bbox_inches='tight', dpi = 300) 
+    if fL == 0:
+        saveName = 'acRippleChan8.png'
+    elif fL == 1:
+        saveName = 'acRippleChan8_Vin.png'
+            
+    plt.savefig(os.path.join(basePath, saveName), bbox_inches='tight', dpi = 300) 
      
 #%% stepResolution
 
-# DC value w/ small steps
-plt.figure()
-readFile = os.path.join(basePath, 'stepResolution.csv')
-data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
+# fileList = ['stepResolution.csv', 
+#             'stepResolution_Vin.csv']
 
-plotVals = np.zeros((data.shape[1]/3, 3))
+fileList = ['stepResolution.csv']
 
-stdDevList = []
-
-for k in range(data.shape[1]/3):
-    t = data[:,3*k+0]
-    trig = data[:,3*k+1]
-    sig = data[:,3*k+2]
+for fL in fileList:
     
-    plt.errorbar(np.mean(trig), np.mean(sig), yerr = np.std(sig), fmt = '.', 
-                 color = rgb(52, 152, 219), markersize = 4)
-    
-    stdDevList.append(np.std(sig))
+    print(fL)
 
+    # DC value w/ small steps
+    plt.figure()
+    readFile = os.path.join(basePath, fL)
+    data = pd.read_csv(readFile, header = None).to_numpy()[:,1:]
     
-plt.show()
-plt.xlabel('Set value (V)')
-plt.ylabel('Measured value (V)')  
-plt.savefig(os.path.join(basePath, 'stepResolutionSummary.png'), bbox_inches='tight', dpi = 300) 
-
-fID.write('-----------------\n')
-fID.write('stepResolution\n')
-fID.write('0.5 sec window.  Small steps around 2.5V.\n')
-fID.write('File : {}\n'.format(readFile))
-fID.write('Mean deviation : {}\n'.format(np.mean(stdDevList)))
+    plotVals = np.zeros((int(data.shape[1]/3), 3))
+    
+    stdDevList = []
+    
+    for k in range(int(data.shape[1]/3)):
+        t = data[:,3*k+0]
+        trig = data[:,3*k+1] + (5*(3276)/65535) # Recorded as test value above offset.  Need to add offset back in + rescale
+        sig = data[:,3*k+2]
+        
+        plt.errorbar(np.mean(trig), np.mean(sig), yerr = np.std(sig), fmt = '.', 
+                     color = rgb(52, 152, 219), markersize = 4)
+        
+        stdDevList.append(np.std(sig))
+    
+    
+    if fL.endswith('Vin.csv'):
+        saveName = 'stepResolutionSummary_Vin.png'
+    else:
+        saveName = 'stepResolutionSummary.png'
+        
+    plt.show()
+    plt.xlabel('Set value (V)')
+    plt.ylabel('Measured value (V)')  
+    plt.savefig(os.path.join(basePath, saveName), bbox_inches='tight', dpi = 300) 
+    
+    fID.write('-----------------\n')
+    fID.write('stepResolution\n')
+    fID.write('0.1 sec window.  Small steps around 0.25V.\n')
+    fID.write('File : {}\n'.format(readFile))
+    fID.write('Mean deviation : {}\n'.format(np.mean(stdDevList)))
 
 
 #%%

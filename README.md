@@ -1,3 +1,9 @@
+## Updates 12/11/2020:
+- Board v2.1, contributed by Filipe Carvalho.  Improved signal-to-noise on outputs - 1.7 mV down from 16 mV.
+- Sketch for a Metro M4 base board.  Output of 100,000 samples/sec with memory for 20,000 waypoints.
+- Driver code is Python3-compatible.
+
+
 ## octoDAC 8-channel analog output Arduino shield
 
 A cheap USB-programmable analog output is great for setting intensities, power levels, or general analog signalling in many experimental contexts.  There are lots of solutions when you want one or two of these on your microcontroller.  But, for example, if you want to trim the output of all of the lasers in your launch then you need 4-6 analog outputs.  There are many fewer examples for how to do this at low cost and with straightforward programming.
@@ -49,16 +55,24 @@ The DAC8568 has a CLR pin to clear inputs.  In the firmware this is used as a sh
 
 The LDAC pin on the DAC8568 is similar.  The current firmware updates the DAC in 'synchronous' mode, where each output is addressed (and timed) separately.  In this case, tie LDAC to ground by populating R18 with a 0Ω resistor and R17 open. If desired, the LDAC pin can be used as the trigger for 'asynchronous' mode updates to the DAC register. This may be adventageous if you want all channels to update at the same time. For this mode, leave R18 open and R17 populated with a 0Ω resistor.
 
-#### Performance:
-Timing and voltage performance is summarized in .\code\Python\octoDAC\validation\summary\octoDACvalidation.pdf.  Results of tests summarized in .\code\Python\octoDAC\validation\ are available in .\code\Python\octoDAC\validation\output\.  See octoDACTestScript.py for acquisition of testing data through a USB-connected oscilloscope.  This data is analyzed octoDACTestAnalysis.py.  
+#### Performance (w/ Arduino Uno base board):
+Timing and voltage performance is summarized in .\code\Python\octoDAC\validation\summary\octoDACvalidation.pdf (nb - this is for v1 now).  Results of tests summarized in .\code\Python\octoDAC\validation\ are available in .\code\Python\octoDAC\validation\output\ (includes v1 and v2 of board, with Arduino and Metro bases).  See octoDACTestScript.py for acquisition of testing data through a USB-connected oscilloscope.  This data is analyzed octoDACTestAnalysis.py.  
 
 These tests show ~60 µsec delay for each communication channel engaged in the DAC.  All channels can be updated in < 450 µsec.  Waveform timing precision can be < 1 µsec.  These delays are predictable and can be offset in the waveform timing programmed in to the device.  
 
-Voltage output is linear across the 0-5V range, with ~15 mV ripple measured at each position.  This corresponds to 10-12 bits of usable voltage resolution even at fast acquisition rates.  With any sort of low-pass filtering or averaging this resolution would increase.  
+Voltage output is linear across the 0-5V range, with ~15 mV (~1.5 mV in v2.1 board) ripple measured at each position.  With any sort of low-pass filtering or averaging this resolution would increase.  
 
 Overall this performance is moderate.  But for the cost (~$50 in parts) this is excellent.  Any commercial alternative costs 10x more or you have to build your own!
 
+#### Changes w/ Metro M4 SAMD51 base board:
 
+Metro M4 w/ SAMD51 microcontroller has much higher clock speed (120 MHz) and memory compared to Arduino Uno.  The performance of the octoDAC with this base board is conserdably improved from a timing perspective. Noise performance is slightly degraded (2.1 mV ripple vs 1.5-1.7 mV). 
+
+Delay between trigger and analog output rise is ~14 µsec.  All channels are updated in under 75 µsec. Waveform waypoints take ~1 µsec to update at the output and the board memory can hold 20,000 of these points (vs 100 on Uno).  A 100-sample 0-5v sine wave completes in under 1 ms at max speed.
+
+The sketch for the Metro M4 includes changes to the NicoLase outputs, which require serial, rather than parallel, updating.  Still, these updates complete with a delay of a few hundred nanoseconds from the first to last channel.  Further changes affect the USB serial and SPI ports on the board.  Overall performance is very similar to the Arduino sketch, wtih the enhancement in response speed and memory capacity.
+
+Metro sketch can be applied with Arduino IDE, using the Adafruit-recommended updates.  Likely similar results would come from the SparkFun version of the SAMD51 board.  File is at ./code/Arduino/octoDAC_NicoLase_Metro. 
 
 
 

@@ -1,0 +1,97 @@
+octoDAC analysis results
+nb - *_Vin corresponds to data w/ battery on Vin powering opAmps.
+-----------------
+Digital jitter
+Delay between input trigger and output digital signal
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\digitalJitter.csv
+Result : 5.127873227689741e-06 +- 1.301355203707949e-07 (mean +- stddev)
+-----------------
+Analog jitter
+Delay between input trigger and output analog signal
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\analogJitter.csv
+Result : 5.272894078398665e-05 +- 3.61131581927921e-06 (mean +- stddev)
+-----------------
+Top hat jitter
+Jitter between expected drop of 100 탎 top hat and measured
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\tophatJitter.csv
+Result : -8.874061718100476e-08 +- 2.0803909180037095e-06 (mean +- stddev)
+-----------------
+Analog cycle jitter
+Jitter between expected rise of low value in 100 탎 square pulse and measured
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\analogCycleJitter.csv
+Result : 6.260350291909923e-05 +- 3.369018441617285e-06 (mean +- stddev)
+-----------------
+Analog  jitter all channels
+Trigger at t = 0.  Rise time for first and last channels when all channels have t = 0 sequence entry.
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\analogJitterAllChannels.csv
+Result first channel : 0.00017037197664720603 +- 3.5907631983608438e-06 (mean +- stddev)
+Result last channel : 0.00047537114261884906 +- 4.3822218235538895e-06 (mean +- stddev)
+-----------------
+Top hat jitter all channels
+Trigger at t = 0, 100 탎 top hat.  Rise time for first and last channels when all channels have t = 0 sequence entry.
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\topHatJitterAllChannels.csv
+Result first channel : 0.00024417340558566063 +- 2.8347478019770968e-06 (mean +- stddev)
+Result last channel : 0.0002448436848686953 +- 2.8595126491951275e-06 (mean +- stddev)
+-----------------
+Top hat jitter all channels, longer
+Trigger at t = 0, 500 탎 top hat.  Rise time for first and last channels when all channels have t = 0 sequence entry.
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\topHatJitterAllChansLonger.csv
+Result first channel : -2.7027928303461127e-06 +- 5.481508359484405e-06 (mean +- stddev)
+Result last channel : -2.5627344726970392e-06 +- 3.459345383322963e-06 (mean +- stddev)
+-----------------
+Waveform timing with naive input
+Trigger at t = 0 on rising edge.  Should be a 2.5 kHz square wave with 50% duty cycle.  200 탎 on both high and low values.
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\waveformNaive.csv
+High value period : -9.347538495353605e-07 +- 1.4069847550815609e-05 (mean +- stddev)
+Low value period : 5.8804563423833435e-05 +- 2.593852765262543e-05 (mean +- stddev)
+-----------------
+Waveform timing with corrected input
+Trigger at t = 0 on rising edge.  Should be a 2.5 kHz square wave with 50% duty cycle.  200 탎 on both high and low values.
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\waveformCorrected.csv
+High value period : -3.2953598221732537e-07 +- 2.0686111225825087e-06 (mean +- stddev)
+Low value period : -9.809863707103175e-07 +- 3.2334609023129116e-06 (mean +- stddev)
+-----------------
+Linearity measurements
+Set value, measure for 250 ms.  Plot mean + std dev at each value.
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan1.csv
+Line fits : 0.9959376536849089, -0.01582895260726023 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan2.csv
+Line fits : 0.990212674882278, 0.002216635247524579 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan3.csv
+Line fits : 0.9890992064932486, 0.002835735181518296 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan4.csv
+Line fits : 0.9902885661716674, 0.0017216649504955943 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan5.csv
+Line fits : 0.9898648167225924, 0.003985486732673316 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan6.csv
+Line fits : 0.9927221838481823, -0.007810400264026464 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan7.csv
+Line fits : 0.9953194240216279, -0.018007935841584024 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan8.csv
+Line fits : 0.9859365041716883, 0.01175868198019803 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan1_Vin.csv
+Line fits : 0.9928199665322662, -0.014453338877887847 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan2_Vin.csv
+Line fits : 0.9920100383930197, -0.013483377953795108 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan3_Vin.csv
+Line fits : 0.9924420580161983, -0.01855081821782179 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan4_Vin.csv
+Line fits : 0.9934584243220936, -0.016259691881187702 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan5_Vin.csv
+Line fits : 0.9953534976973767, -0.0193050352475245 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan6_Vin.csv
+Line fits : 0.9967250840758876, -0.021015991551155196 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan7_Vin.csv
+Line fits : 0.9973223066497636, -0.023738580858085896 (slope, offset)
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\linearity_chan8_Vin.csv
+Line fits : 0.9964179736061113, -0.023929006732673137 (slope, offset)
+-----------------
+stepResolution
+0.1 sec window.  Small steps around 0.25V.
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\stepResolution.csv
+Mean deviation : 0.0017117275881808397
+-----------------
+stepResolution
+0.1 sec window.  Small steps around 0.25V.
+File : C:\Users\rusty\Documents\octoDAC\octodac\code\Python\octoDAC\validation\output\stepResolution_Vin.csv
+Mean deviation : 0.001779250711005192
