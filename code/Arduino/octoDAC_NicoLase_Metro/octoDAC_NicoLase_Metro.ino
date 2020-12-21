@@ -35,6 +35,7 @@ NicoLase commands:
  *  X - All off and reset to trigger-enabled setting.
  *  Y - Return device ID ('NicoLaseSequencer')
  *  ? X - Query state of device X.  Supported devices : S = shutter open (0 = closed, 1 = open)
+ *                                                      P = proceedTrigger set by primaryFire input since last query (1 = yes; 0 = no)
 
 octoDAC Commands:
  * x SHORT - set channel x to value SHORT.  x = 1-8.
@@ -147,6 +148,10 @@ volatile unsigned long postIllumTime = 0;
 //volatile int digitCount = 1;
 
 boolean shutterState = false;
+
+boolean proceedTrigger = false; // Set to true with primaryFire interrupt
+                                // Set to false by "? P" query
+                                // Query to see if proceedTrigger has come in since last query
 
 // Incoming trigger variables
 #define triggerPin 2
@@ -601,6 +606,20 @@ if (stringComplete) {
             }
 
         break;
+
+        case ('P'):
+           // Return current proceedTrigger state
+           // Reset trigger to false
+
+           if (proceedTrigger) {
+            Serial.println("1");
+            proceedTrigger = false;
+           }
+           else {
+            Serial.println("0");
+           }
+
+           break;
             
         }
     break;
@@ -1283,6 +1302,7 @@ void ToggleLED() {
      }
 
      LEDToggle = !LEDToggle;
+     proceedTrigger = true;
      
 }
 
