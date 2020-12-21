@@ -1293,7 +1293,7 @@ void ToggleLED() {
           cycleNum = 0;
         }
       }
-
+	proceedTrigger = true;
    }
      
      else {
@@ -1302,7 +1302,7 @@ void ToggleLED() {
      }
 
      LEDToggle = !LEDToggle;
-     proceedTrigger = true;
+     
      
 }
 
